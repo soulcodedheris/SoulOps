@@ -15,7 +15,7 @@ import {
   BookOpen,
   Users,
   Music,
-  Exercise,
+  Dumbbell,
   ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
@@ -60,7 +60,7 @@ const moodOptions = [
 
 const activities = [
   { icon: Coffee, label: "Prayer/Meditation", cultural: "Spiritual practice" },
-  { icon: Exercise, label: "Physical Activity", cultural: "Traditional dance" },
+  { icon: Dumbbell, label: "Physical Activity", cultural: "Traditional dance" },
   { icon: Music, label: "Music/Art", cultural: "Cultural expression" },
   { icon: BookOpen, label: "Reading/Learning", cultural: "Knowledge seeking" },
   { icon: Users, label: "Social Time", cultural: "Community connection" },

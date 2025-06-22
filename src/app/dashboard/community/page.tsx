@@ -17,7 +17,7 @@ import {
   Video,
   Phone,
   BookOpen,
-  Prayer,
+  Hand,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -111,7 +111,7 @@ const communityResources = [
   {
     title: "Cultural Wellness Practices",
     description: "Traditional practices adapted for modern mental health",
-    icon: Prayer,
+    icon: Hand,
     color: "bg-cultural-sun text-white",
   },
   {

@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 // User Management
@@ -43,6 +43,8 @@ model User {
   assessments       Assessment[]
   forumPosts        ForumPost[]
   forumComments     ForumComment[]
+  forumLikes        ForumLike[]
+  forumCommentLikes ForumCommentLike[]
   supportGroups     SupportGroupMember[]
   consultations     Consultation[]
   notifications     Notification[]
@@ -109,8 +111,8 @@ model MoodEntry {
   stress      Int?     // 1-10 scale
   sleep       Int?     // 1-10 scale
   notes       String?
-  activities  String[] // Array of activities
-  triggers    String[] // Array of triggers
+  activities  Json?    // Array of activities as JSON
+  triggers    Json?    // Array of triggers as JSON
   location    String?
   weather     String?
   createdAt   DateTime @default(now())
@@ -147,7 +149,7 @@ model JournalEntry {
   title     String?
   content   String
   mood      Int?     // 1-10 scale
-  tags      String[]
+  tags      Json?    // Array of tags as JSON
   isPrivate Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -186,7 +188,7 @@ model ForumPost {
   categoryId  String
   title       String
   content     String
-  tags        String[]
+  tags        Json?       // Array of tags as JSON
   isAnonymous Boolean     @default(false)
   isPinned    Boolean     @default(false)
   isLocked    Boolean     @default(false)
@@ -210,10 +212,7 @@ model ForumCategory {
   name        String
   description String?
   slug        String   @unique
-  icon        String?
-  color       String?
   isActive    Boolean  @default(true)
-  sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -227,26 +226,21 @@ model ForumComment {
   postId    String
   userId    String
   content   String
-  parentId  String?  // For nested comments
   isAnonymous Boolean @default(false)
-  likeCount Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parent    ForumComment? @relation("CommentReplies", fields: [parentId], references: [id])
-  replies   ForumComment[] @relation("CommentReplies")
   likes     ForumCommentLike[]
 
   @@map("forum_comments")
 }
 
 model ForumLike {
-  id        String   @id @default(cuid())
-  postId    String
-  userId    String
-  createdAt DateTime @default(now())
+  id     String @id @default(cuid())
+  postId String
+  userId String
 
   post ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -256,10 +250,9 @@ model ForumLike {
 }
 
 model ForumCommentLike {
-  id        String   @id @default(cuid())
+  id        String @id @default(cuid())
   commentId String
   userId    String
-  createdAt DateTime @default(now())
 
   comment ForumComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
   user    User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -268,33 +261,30 @@ model ForumCommentLike {
   @@map("forum_comment_likes")
 }
 
-// Support Groups
 model SupportGroup {
   id          String   @id @default(cuid())
   name        String
   description String?
-  category    String
-  language    String   @default("en")
+  language    String
   culturalContext String?
-  isPrivate   Boolean  @default(false)
   maxMembers  Int?
-  currentMembers Int   @default(0)
+  isPrivate   Boolean  @default(false)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  members SupportGroupMember[]
-  sessions SupportGroupSession[]
+  members     SupportGroupMember[]
+  sessions    SupportGroupSession[]
 
   @@map("support_groups")
 }
 
 model SupportGroupMember {
-  id      String   @id @default(cuid())
+  id      String     @id @default(cuid())
   groupId String
   userId  String
   role    MemberRole @default(MEMBER)
-  joinedAt DateTime @default(now())
+  joinedAt DateTime  @default(now())
 
   group SupportGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
   user  User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -310,8 +300,7 @@ model SupportGroupSession {
   description String?
   startTime   DateTime
   endTime     DateTime?
-  isActive    Boolean  @default(false)
-  maxParticipants Int?
+  isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -320,99 +309,89 @@ model SupportGroupSession {
   @@map("support_group_sessions")
 }
 
-// Tele-Consultation
 model Consultation {
-  id          String   @id @default(cuid())
+  id          String             @id @default(cuid())
   userId      String
   providerId  String?
+  healerId    String?
   type        ConsultationType
   status      ConsultationStatus @default(SCHEDULED)
-  title       String?
-  description String?
-  scheduledAt DateTime?
-  startedAt   DateTime?
-  endedAt     DateTime?
-  duration    Int?     // in minutes
+  scheduledAt DateTime
+  duration    Int                // in minutes
   notes       String?
-  rating      Int?     // 1-5 stars
-  feedback    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
 
   user     User @relation(fields: [userId], references: [id], onDelete: Cascade)
   provider Provider? @relation(fields: [providerId], references: [id])
+  healer   TraditionalHealer? @relation(fields: [healerId], references: [id])
 
   @@map("consultations")
 }
 
 model Provider {
-  id          String   @id @default(cuid())
-  name        String
-  email       String   @unique
-  phone       String?
-  specialization String
-  languages   String[]
+  id              String   @id @default(cuid())
+  name            String
+  email           String   @unique
+  phone           String?
+  specialization  String
+  languages       Json?    // Array of languages as JSON
   culturalContext String?
-  isAvailable Boolean  @default(true)
-  rating      Float    @default(0)
-  reviewCount Int      @default(0)
-  bio         String?
-  avatar      String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   consultations Consultation[]
 
   @@map("providers")
 }
 
-// Traditional Healers & Community Resources
 model TraditionalHealer {
-  id          String   @id @default(cuid())
-  name        String
-  specialization String
-  location    String
-  languages   String[]
+  id                String   @id @default(cuid())
+  name              String
+  specialization    String
+  experience        String
+  location          String
+  languages         Json?    // Array of languages as JSON
   culturalBackground String
-  experience  Int?     // years of experience
-  rating      Float    @default(0)
-  reviewCount Int      @default(0)
-  isVerified  Boolean  @default(false)
-  contactInfo Json     // phone, email, address
-  availability Json?   // availability schedule
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  rating            Float?
+  availability      String?
+  consultationType  String?
+  focusAreas        Json?    // Array of focus areas as JSON
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  consultations Consultation[]
 
   @@map("traditional_healers")
 }
 
 model CommunityResource {
-  id          String   @id @default(cuid())
-  name        String
-  type        ResourceType
-  description String?
-  location    String?
-  contactInfo Json?
-  languages   String[]
+  id              String       @id @default(cuid())
+  title           String
+  description     String?
+  type            ResourceType
+  url             String?
+  contactInfo     Json?
+  languages       Json?        // Array of languages as JSON
   culturalContext String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isActive        Boolean      @default(true)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   @@map("community_resources")
 }
 
-// Cultural Practices & Content
 model CulturalPractice {
   id          String   @id @default(cuid())
   userId      String
-  name        String
+  title       String
   description String?
-  category    String
-  culturalContext String
+  culturalContext String?
+  duration    Int?     // in minutes
+  frequency   String?
   benefits    String?
-  instructions String?
-  isPublic    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -422,33 +401,27 @@ model CulturalPractice {
 }
 
 model Content {
-  id          String   @id @default(cuid())
-  title       String
-  content     String
-  type        ContentType
-  category    String
-  language    String
+  id              String            @id @default(cuid())
+  title           String
+  description     String?
+  type            ContentType
+  content         String
   culturalContext String?
-  tags        String[]
-  difficulty  ContentDifficulty @default(BEGINNER)
-  duration    Int?     // in minutes
-  isPublished Boolean  @default(false)
-  publishedAt DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  tags            Json?             // Array of tags as JSON
+  difficulty      ContentDifficulty @default(BEGINNER)
+  isActive        Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
   @@map("content")
 }
 
-// Digital Literacy
 model DigitalLiteracyProgress {
   id          String   @id @default(cuid())
   userId      String
   moduleId    String
   progress    Int      @default(0) // 0-100
-  isCompleted Boolean  @default(false)
   completedAt DateTime?
-  score       Int?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -458,17 +431,13 @@ model DigitalLiteracyProgress {
   @@map("digital_literacy_progress")
 }
 
-// Privacy & Security
 model PrivacySettings {
   id                    String   @id @default(cuid())
   userId                String   @unique
   profileVisibility     Visibility @default(PRIVATE)
   dataSharing           Boolean  @default(false)
-  analyticsConsent      Boolean  @default(false)
-  marketingConsent      Boolean  @default(false)
-  emergencyAccess       Boolean  @default(true)
-  twoFactorEnabled      Boolean  @default(false)
-  sessionTimeout        Int      @default(30) // minutes
+  analyticsTracking     Boolean  @default(false)
+  emergencyContactSharing Boolean @default(true)
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
@@ -481,9 +450,8 @@ model EmergencyContact {
   id          String   @id @default(cuid())
   userId      String
   name        String
-  relationship String
   phone       String
-  email       String?
+  relationship String
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -493,16 +461,14 @@ model EmergencyContact {
   @@map("emergency_contacts")
 }
 
-// Notifications
 model Notification {
   id        String           @id @default(cuid())
   userId    String
   type      NotificationType
   title     String
   message   String
-  data      Json?
   isRead    Boolean          @default(false)
-  readAt    DateTime?
+  data      Json?
   createdAt DateTime         @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -510,13 +476,12 @@ model Notification {
   @@map("notifications")
 }
 
-// Authentication
 model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  createdAt    DateTime @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -535,9 +500,10 @@ enum GoalCategory {
   MENTAL_HEALTH
   PHYSICAL_HEALTH
   SOCIAL_CONNECTIONS
-  PERSONAL_GROWTH
+  CAREER
+  EDUCATION
+  SPIRITUALITY
   CULTURAL_PRACTICES
-  DIGITAL_LITERACY
   OTHER
 }
 
@@ -549,26 +515,25 @@ enum GoalStatus {
 }
 
 enum AssessmentType {
-  DEPRESSION
   ANXIETY
+  DEPRESSION
   STRESS
   SLEEP
-  GENERAL_WELLBEING
+  CULTURAL_WELLNESS
   DIGITAL_LITERACY
-  CULTURAL_WELLBEING
+  CUSTOM
 }
 
 enum AssessmentResult {
   LOW
-  MILD
   MODERATE
+  HIGH
   SEVERE
-  CRITICAL
 }
 
 enum PostStatus {
   ACTIVE
-  HIDDEN
+  ARCHIVED
   DELETED
 }
 
@@ -580,7 +545,7 @@ enum MemberRole {
 
 enum ConsultationType {
   VIDEO
-  VOICE
+  AUDIO
   TEXT
   IN_PERSON
 }
@@ -594,14 +559,12 @@ enum ConsultationStatus {
 }
 
 enum ResourceType {
-  MENTAL_HEALTH_CLINIC
   SUPPORT_GROUP
-  CRISIS_HOTLINE
-  EDUCATIONAL_CENTER
-  COMMUNITY_CENTER
-  RELIGIOUS_INSTITUTION
-  TRADITIONAL_HEALER
-  OTHER
+  HELPLINE
+  EMERGENCY
+  EDUCATION
+  CULTURAL
+  DIGITAL_LITERACY
 }
 
 enum ContentType {
@@ -610,9 +573,7 @@ enum ContentType {
   AUDIO
   INTERACTIVE
   ASSESSMENT
-  EXERCISE
-  MEDITATION
-  STORY
+  WORKSHOP
 }
 
 enum ContentDifficulty {
@@ -622,16 +583,16 @@ enum ContentDifficulty {
 }
 
 enum NotificationType {
-  SYSTEM
-  COMMUNITY
-  CONSULTATION
-  REMINDER
-  EMERGENCY
-  ACHIEVEMENT
+  MOOD_REMINDER
+  GOAL_UPDATE
+  COMMUNITY_UPDATE
+  CONSULTATION_REMINDER
+  CULTURAL_EVENT
+  SYSTEM_UPDATE
 }
 
 enum Visibility {
   PUBLIC
-  FRIENDS
   PRIVATE
+  FRIENDS_ONLY
 } 
