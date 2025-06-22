@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Heart, Globe, Shield, Users, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 const languages = [
   { code: "en", name: "English", flag: "🇺🇸" },
@@ -43,6 +45,18 @@ export default function AuthPage() {
   const [selectedLanguage, setSelectedLanguage] = useState("en");
   const [selectedContext, setSelectedContext] = useState("nigerian");
   const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    firstName: "",
+    lastName: "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const { login, register } = useAuth();
+  const router = useRouter();
 
   const handleLanguageSelect = (languageCode: string) => {
     setSelectedLanguage(languageCode);
@@ -52,6 +66,45 @@ export default function AuthPage() {
   const handleContextSelect = (contextId: string) => {
     setSelectedContext(contextId);
     setStep(3);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+    setError("");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        await login(formData.email, formData.password);
+      } else {
+        if (formData.password !== formData.confirmPassword) {
+          throw new Error("Passwords do not match");
+        }
+        await register({
+          email: formData.email,
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          language: selectedLanguage,
+          culturalContext: selectedContext,
+        });
+      }
+
+      // Redirect to dashboard on success
+      router.push("/dashboard");
+    } catch (error: any) {
+      setError(error.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -176,7 +229,52 @@ export default function AuthPage() {
                 </p>
               </div>
 
-              <form className="space-y-4">
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-600 text-sm">{error}</p>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {!isLogin && (
+                  <>
+                    <div>
+                      <label
+                        htmlFor="firstName"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        First Name
+                      </label>
+                      <input
+                        type="text"
+                        id="firstName"
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleInputChange}
+                        className="input w-full"
+                        placeholder="Enter your first name"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="lastName"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Last Name
+                      </label>
+                      <input
+                        type="text"
+                        id="lastName"
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleInputChange}
+                        className="input w-full"
+                        placeholder="Enter your last name"
+                      />
+                    </div>
+                  </>
+                )}
+
                 <div>
                   <label
                     htmlFor="email"
@@ -187,6 +285,9 @@ export default function AuthPage() {
                   <input
                     type="email"
                     id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
                     className="input w-full"
                     placeholder="Enter your email"
                     required
@@ -203,6 +304,9 @@ export default function AuthPage() {
                   <input
                     type="password"
                     id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
                     className="input w-full"
                     placeholder="Enter your password"
                     required
@@ -220,6 +324,9 @@ export default function AuthPage() {
                     <input
                       type="password"
                       id="confirmPassword"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
                       className="input w-full"
                       placeholder="Confirm your password"
                       required
@@ -227,8 +334,16 @@ export default function AuthPage() {
                   </div>
                 )}
 
-                <Button type="submit" className="w-full btn-primary">
-                  {isLogin ? "Sign In" : "Create Account"}
+                <Button
+                  type="submit"
+                  className="w-full btn-primary"
+                  disabled={loading}
+                >
+                  {loading
+                    ? "Processing..."
+                    : isLogin
+                    ? "Sign In"
+                    : "Create Account"}
                 </Button>
               </form>
 

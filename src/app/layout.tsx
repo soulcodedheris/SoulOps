@@ -3,13 +3,23 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { Navigation } from "@/components/home/Navigation";
+import { AuthProvider } from "@/hooks/useAuth";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "SoulOps - Culturally-Relevant Mental Health Support",
-  description: "Empowering underserved communities with culturally-relevant, accessible, and privacy-focused digital mental health solutions. Bridging the gap between traditional wisdom and modern technology.",
-  keywords: ["mental health", "cultural adaptation", "digital wellness", "community support", "Nigeria", "Africa", "telemedicine"],
+  description:
+    "Empowering underserved communities with culturally-relevant, accessible, and privacy-focused digital mental health solutions. Bridging the gap between traditional wisdom and modern technology.",
+  keywords: [
+    "mental health",
+    "cultural adaptation",
+    "digital wellness",
+    "community support",
+    "Nigeria",
+    "Africa",
+    "telemedicine",
+  ],
   authors: [{ name: "SoulOps Team" }],
   creator: "SoulOps",
   publisher: "SoulOps",
@@ -24,14 +34,16 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "SoulOps - Culturally-Relevant Mental Health Support",
-    description: "Bridging the digital chasm for global mental health in underserved communities",
+    description:
+      "Bridging the digital chasm for global mental health in underserved communities",
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
     title: "SoulOps - Culturally-Relevant Mental Health Support",
-    description: "Bridging the digital chasm for global mental health in underserved communities",
+    description:
+      "Bridging the digital chasm for global mental health in underserved communities",
   },
   robots: {
     index: true,
@@ -90,10 +102,12 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} antialiased`}>
-        <Navigation />
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
-          <main className="flex-1 pt-16">{children}</main>
-        </div>
+        <AuthProvider>
+          <Navigation />
+          <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
+            <main className="flex-1 pt-16">{children}</main>
+          </div>
+        </AuthProvider>
         <Toaster
           position="top-right"
           toastOptions={{
