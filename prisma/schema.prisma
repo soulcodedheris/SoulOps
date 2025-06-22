@@ -1,0 +1,637 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  phone             String?  @unique
+  username          String?  @unique
+  firstName         String?
+  lastName          String?
+  displayName       String?
+  avatar            String?
+  dateOfBirth       DateTime?
+  gender            Gender?
+  location          String?
+  timezone          String?
+  language          String   @default("en")
+  culturalContext   String?
+  isAnonymous       Boolean  @default(false)
+  isVerified        Boolean  @default(false)
+  isActive          Boolean  @default(true)
+  lastSeen          DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relationships
+  profile           UserProfile?
+  preferences       UserPreferences?
+  sessions          Session[]
+  moodEntries       MoodEntry[]
+  goals             Goal[]
+  journalEntries    JournalEntry[]
+  assessments       Assessment[]
+  forumPosts        ForumPost[]
+  forumComments     ForumComment[]
+  supportGroups     SupportGroupMember[]
+  consultations     Consultation[]
+  notifications     Notification[]
+  emergencyContacts EmergencyContact[]
+  culturalPractices CulturalPractice[]
+  digitalLiteracy   DigitalLiteracyProgress[]
+  privacySettings   PrivacySettings?
+
+  @@map("users")
+}
+
+model UserProfile {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  bio                   String?
+  occupation            String?
+  education             String?
+  familyStatus          String?
+  culturalBackground    String?
+  spiritualBeliefs      String?
+  traditionalPractices  String?
+  emergencyContact      String?
+  emergencyPhone        String?
+  emergencyRelationship String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model UserPreferences {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  theme                 String   @default("light")
+  notifications         Boolean  @default(true)
+  emailNotifications    Boolean  @default(true)
+  pushNotifications     Boolean  @default(true)
+  smsNotifications      Boolean  @default(false)
+  language              String   @default("en")
+  culturalContext       String?
+  accessibilityMode     Boolean  @default(false)
+  highContrastMode      Boolean  @default(false)
+  largeTextMode         Boolean  @default(false)
+  voiceNavigation       Boolean  @default(false)
+  offlineMode           Boolean  @default(true)
+  dataSharing           Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+// Mental Health Tracking
+model MoodEntry {
+  id          String   @id @default(cuid())
+  userId      String
+  mood        Int      // 1-10 scale
+  energy      Int?     // 1-10 scale
+  anxiety     Int?     // 1-10 scale
+  stress      Int?     // 1-10 scale
+  sleep       Int?     // 1-10 scale
+  notes       String?
+  activities  String[] // Array of activities
+  triggers    String[] // Array of triggers
+  location    String?
+  weather     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("mood_entries")
+}
+
+model Goal {
+  id          String      @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  category    GoalCategory
+  target      String?
+  progress    Int         @default(0) // 0-100
+  status      GoalStatus  @default(ACTIVE)
+  startDate   DateTime    @default(now())
+  targetDate  DateTime?
+  completedAt DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("goals")
+}
+
+model JournalEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String?
+  content   String
+  mood      Int?     // 1-10 scale
+  tags      String[]
+  isPrivate Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("journal_entries")
+}
+
+// Mental Health Assessments
+model Assessment {
+  id          String           @id @default(cuid())
+  userId      String
+  type        AssessmentType
+  title       String
+  description String?
+  questions   Json             // Array of questions
+  responses   Json             // Array of responses
+  score       Int?
+  result      AssessmentResult?
+  recommendations String?
+  isCompleted Boolean          @default(false)
+  completedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("assessments")
+}
+
+// Community Features
+model ForumPost {
+  id          String      @id @default(cuid())
+  userId      String
+  categoryId  String
+  title       String
+  content     String
+  tags        String[]
+  isAnonymous Boolean     @default(false)
+  isPinned    Boolean     @default(false)
+  isLocked    Boolean     @default(false)
+  viewCount   Int         @default(0)
+  likeCount   Int         @default(0)
+  commentCount Int        @default(0)
+  status      PostStatus  @default(ACTIVE)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    ForumCategory @relation(fields: [categoryId], references: [id])
+  comments    ForumComment[]
+  likes       ForumLike[]
+
+  @@map("forum_posts")
+}
+
+model ForumCategory {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  slug        String   @unique
+  icon        String?
+  color       String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  posts ForumPost[]
+
+  @@map("forum_categories")
+}
+
+model ForumComment {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  content   String
+  parentId  String?  // For nested comments
+  isAnonymous Boolean @default(false)
+  likeCount Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    ForumComment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   ForumComment[] @relation("CommentReplies")
+  likes     ForumCommentLike[]
+
+  @@map("forum_comments")
+}
+
+model ForumLike {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("forum_likes")
+}
+
+model ForumCommentLike {
+  id        String   @id @default(cuid())
+  commentId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  comment ForumComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@map("forum_comment_likes")
+}
+
+// Support Groups
+model SupportGroup {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  category    String
+  language    String   @default("en")
+  culturalContext String?
+  isPrivate   Boolean  @default(false)
+  maxMembers  Int?
+  currentMembers Int   @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members SupportGroupMember[]
+  sessions SupportGroupSession[]
+
+  @@map("support_groups")
+}
+
+model SupportGroupMember {
+  id      String   @id @default(cuid())
+  groupId String
+  userId  String
+  role    MemberRole @default(MEMBER)
+  joinedAt DateTime @default(now())
+
+  group SupportGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@map("support_group_members")
+}
+
+model SupportGroupSession {
+  id          String   @id @default(cuid())
+  groupId     String
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime?
+  isActive    Boolean  @default(false)
+  maxParticipants Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  group SupportGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@map("support_group_sessions")
+}
+
+// Tele-Consultation
+model Consultation {
+  id          String   @id @default(cuid())
+  userId      String
+  providerId  String?
+  type        ConsultationType
+  status      ConsultationStatus @default(SCHEDULED)
+  title       String?
+  description String?
+  scheduledAt DateTime?
+  startedAt   DateTime?
+  endedAt     DateTime?
+  duration    Int?     // in minutes
+  notes       String?
+  rating      Int?     // 1-5 stars
+  feedback    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user     User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider Provider? @relation(fields: [providerId], references: [id])
+
+  @@map("consultations")
+}
+
+model Provider {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  phone       String?
+  specialization String
+  languages   String[]
+  culturalContext String?
+  isAvailable Boolean  @default(true)
+  rating      Float    @default(0)
+  reviewCount Int      @default(0)
+  bio         String?
+  avatar      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  consultations Consultation[]
+
+  @@map("providers")
+}
+
+// Traditional Healers & Community Resources
+model TraditionalHealer {
+  id          String   @id @default(cuid())
+  name        String
+  specialization String
+  location    String
+  languages   String[]
+  culturalBackground String
+  experience  Int?     // years of experience
+  rating      Float    @default(0)
+  reviewCount Int      @default(0)
+  isVerified  Boolean  @default(false)
+  contactInfo Json     // phone, email, address
+  availability Json?   // availability schedule
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("traditional_healers")
+}
+
+model CommunityResource {
+  id          String   @id @default(cuid())
+  name        String
+  type        ResourceType
+  description String?
+  location    String?
+  contactInfo Json?
+  languages   String[]
+  culturalContext String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("community_resources")
+}
+
+// Cultural Practices & Content
+model CulturalPractice {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  category    String
+  culturalContext String
+  benefits    String?
+  instructions String?
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("cultural_practices")
+}
+
+model Content {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  type        ContentType
+  category    String
+  language    String
+  culturalContext String?
+  tags        String[]
+  difficulty  ContentDifficulty @default(BEGINNER)
+  duration    Int?     // in minutes
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("content")
+}
+
+// Digital Literacy
+model DigitalLiteracyProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  moduleId    String
+  progress    Int      @default(0) // 0-100
+  isCompleted Boolean  @default(false)
+  completedAt DateTime?
+  score       Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId])
+  @@map("digital_literacy_progress")
+}
+
+// Privacy & Security
+model PrivacySettings {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  profileVisibility     Visibility @default(PRIVATE)
+  dataSharing           Boolean  @default(false)
+  analyticsConsent      Boolean  @default(false)
+  marketingConsent      Boolean  @default(false)
+  emergencyAccess       Boolean  @default(true)
+  twoFactorEnabled      Boolean  @default(false)
+  sessionTimeout        Int      @default(30) // minutes
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("privacy_settings")
+}
+
+model EmergencyContact {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  relationship String
+  phone       String
+  email       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("emergency_contacts")
+}
+
+// Notifications
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean          @default(false)
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+// Authentication
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// Enums
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum GoalCategory {
+  MENTAL_HEALTH
+  PHYSICAL_HEALTH
+  SOCIAL_CONNECTIONS
+  PERSONAL_GROWTH
+  CULTURAL_PRACTICES
+  DIGITAL_LITERACY
+  OTHER
+}
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  PAUSED
+  CANCELLED
+}
+
+enum AssessmentType {
+  DEPRESSION
+  ANXIETY
+  STRESS
+  SLEEP
+  GENERAL_WELLBEING
+  DIGITAL_LITERACY
+  CULTURAL_WELLBEING
+}
+
+enum AssessmentResult {
+  LOW
+  MILD
+  MODERATE
+  SEVERE
+  CRITICAL
+}
+
+enum PostStatus {
+  ACTIVE
+  HIDDEN
+  DELETED
+}
+
+enum MemberRole {
+  ADMIN
+  MODERATOR
+  MEMBER
+}
+
+enum ConsultationType {
+  VIDEO
+  VOICE
+  TEXT
+  IN_PERSON
+}
+
+enum ConsultationStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum ResourceType {
+  MENTAL_HEALTH_CLINIC
+  SUPPORT_GROUP
+  CRISIS_HOTLINE
+  EDUCATIONAL_CENTER
+  COMMUNITY_CENTER
+  RELIGIOUS_INSTITUTION
+  TRADITIONAL_HEALER
+  OTHER
+}
+
+enum ContentType {
+  ARTICLE
+  VIDEO
+  AUDIO
+  INTERACTIVE
+  ASSESSMENT
+  EXERCISE
+  MEDITATION
+  STORY
+}
+
+enum ContentDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum NotificationType {
+  SYSTEM
+  COMMUNITY
+  CONSULTATION
+  REMINDER
+  EMERGENCY
+  ACHIEVEMENT
+}
+
+enum Visibility {
+  PUBLIC
+  FRIENDS
+  PRIVATE
+} 
