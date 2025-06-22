@@ -86,8 +86,8 @@ export async function POST(request: NextRequest) {
         stress,
         sleep,
         notes,
-        activities: activities ? JSON.stringify(activities) : null,
-        triggers: triggers ? JSON.stringify(triggers) : null,
+        activities: activities || undefined,
+        triggers: triggers || undefined,
         location,
         weather,
       },
@@ -102,11 +102,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         message: "Mood entry created successfully",
-        moodEntry: {
-          ...moodEntry,
-          activities: activities,
-          triggers: triggers,
-        },
+        moodEntry,
       },
       { status: 201 }
     );

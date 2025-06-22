@@ -59,13 +59,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Return user without password
-    const { password: _, ...userWithoutPassword } = user;
-
+    // Return user (no password field to remove)
     return NextResponse.json(
       {
         message: "User created successfully",
-        user: userWithoutPassword,
+        user,
       },
       { status: 201 }
     );
