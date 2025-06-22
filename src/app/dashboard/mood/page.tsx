@@ -177,6 +177,12 @@ export default function MoodTrackingPage() {
                 </p>
               </div>
             </div>
+            <Link
+              href="/dashboard/mood/history"
+              className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+            >
+              View History
+            </Link>
           </div>
         </div>
       </header>

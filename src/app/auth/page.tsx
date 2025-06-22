@@ -315,6 +315,17 @@ export default function AuthPage() {
                   />
                 </div>
 
+                {isLogin && (
+                  <div className="text-right">
+                    <Link
+                      href="/auth/forgot-password"
+                      className="text-sm text-primary-600 hover:text-primary-700"
+                    >
+                      Forgot your password?
+                    </Link>
+                  </div>
+                )}
+
                 {!isLogin && (
                   <div>
                     <label

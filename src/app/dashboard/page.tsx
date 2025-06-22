@@ -11,6 +11,7 @@ import {
   Shield,
   Brain,
   TrendingUp,
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -61,6 +62,13 @@ const quickActions = [
     description: "Connect with others",
     color: "bg-mental-balanced text-white",
     href: "/dashboard/community",
+  },
+  {
+    icon: MessageCircle,
+    title: "Forum",
+    description: "Join discussions & share experiences",
+    color: "bg-cultural-fire text-white",
+    href: "/dashboard/forum",
   },
   {
     icon: BookOpen,
