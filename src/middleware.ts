@@ -10,6 +10,13 @@ const protectedRoutes = ["/dashboard", "/api/mood", "/api/user"];
 // Routes that are always public
 const publicRoutes = ["/", "/auth", "/api/auth/login", "/api/auth/register"];
 
+interface DecodedToken {
+  userId: string;
+  email: string;
+  language?: string;
+  culturalContext?: string;
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -43,7 +50,7 @@ export function middleware(request: NextRequest) {
 
   try {
     // Verify token
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as DecodedToken;
 
     // Add user info to headers
     const requestHeaders = new Headers(request.headers);
@@ -60,7 +67,7 @@ export function middleware(request: NextRequest) {
         headers: requestHeaders,
       },
     });
-  } catch (error) {
+  } catch {
     // Invalid token - redirect to login
     if (isProtectedRoute) {
       return NextResponse.redirect(new URL("/auth", request.url));

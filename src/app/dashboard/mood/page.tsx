@@ -2,23 +2,18 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/Button";
+import Link from "next/link";
 import {
+  ArrowLeft,
   Heart,
-  Calendar,
-  TrendingUp,
-  Brain,
-  Sun,
-  Moon,
   Activity,
   Coffee,
   BookOpen,
   Users,
   Music,
-  Dumbbell,
-  ArrowLeft,
+  Utensils,
 } from "lucide-react";
-import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 
 const moodOptions = [
   {
@@ -60,7 +55,7 @@ const moodOptions = [
 
 const activities = [
   { icon: Coffee, label: "Prayer/Meditation", cultural: "Spiritual practice" },
-  { icon: Dumbbell, label: "Physical Activity", cultural: "Traditional dance" },
+  { icon: Utensils, label: "Cooking", cultural: "Cultural expression" },
   { icon: Music, label: "Music/Art", cultural: "Cultural expression" },
   { icon: BookOpen, label: "Reading/Learning", cultural: "Knowledge seeking" },
   { icon: Users, label: "Social Time", cultural: "Community connection" },
@@ -68,7 +63,7 @@ const activities = [
 ];
 
 const triggers = [
-  "Work stress",
+  "Job stress",
   "Family issues",
   "Financial concerns",
   "Health worries",
@@ -125,7 +120,7 @@ export default function MoodTrackingPage() {
     );
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const moodEntry = {
       mood: selectedMood,
       activities: selectedActivities,
@@ -133,8 +128,28 @@ export default function MoodTrackingPage() {
       notes,
       timestamp: new Date().toISOString(),
     };
-    console.log("Mood entry saved:", moodEntry);
-    // Here you would save to database
+    try {
+      const response = await fetch("/api/mood-entries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(moodEntry),
+      });
+
+      if (response.ok) {
+        // Success - reset form and go back to step 1
+        setSelectedMood(null);
+        setSelectedActivities([]);
+        setSelectedTriggers([]);
+        setNotes("");
+        setCurrentStep(1);
+      } else {
+        console.error("Error saving mood entry:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error saving mood entry:", error);
+    }
   };
 
   return (

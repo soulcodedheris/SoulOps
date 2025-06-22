@@ -111,7 +111,7 @@ export function CallToAction() {
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               {["English", "Yoruba", "Igbo", "Hausa", "French", "Arabic"].map(
-                (language, index) => (
+                (language) => (
                   <span
                     key={language}
                     className="px-4 py-2 bg-white/20 rounded-full text-sm font-medium"

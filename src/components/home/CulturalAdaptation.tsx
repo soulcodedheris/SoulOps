@@ -226,13 +226,13 @@ export function CulturalAdaptation() {
         >
           <div className="bg-gradient-to-r from-cultural-sun/10 to-cultural-fire/10 rounded-2xl p-8 border border-cultural-sun/20">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              "Tech in Yoruba" Success Story
+              &ldquo;Tech in Yoruba&rdquo; Success Story
             </h3>
             <p className="text-lg text-gray-600 mb-6">
-              Our approach is inspired by successful initiatives like "Tech in
-              Yoruba" which demonstrated that digital literacy training in
-              indigenous languages significantly improves comprehension,
-              confidence, and engagement with technology.
+              Our approach is inspired by successful initiatives like
+              &ldquo;Tech in Yoruba&rdquo; which demonstrated that digital
+              literacy training in indigenous languages significantly improves
+              comprehension, confidence, and engagement with technology.
             </p>
             <div className="inline-flex items-center px-6 py-3 bg-cultural-sun text-white rounded-full font-semibold">
               <Languages className="w-5 h-5 mr-2" />

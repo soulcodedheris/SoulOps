@@ -2,24 +2,20 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/Button";
+import Link from "next/link";
 import {
-  Users,
-  MessageCircle,
   Heart,
-  Shield,
+  Users,
+  BookOpen,
+  ArrowLeft,
   Globe,
   Calendar,
-  Clock,
-  MapPin,
+  Shield,
   Star,
-  ArrowLeft,
   Video,
   Phone,
-  BookOpen,
-  Hand,
 } from "lucide-react";
-import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 
 const supportGroups = [
   {
@@ -111,7 +107,7 @@ const communityResources = [
   {
     title: "Cultural Wellness Practices",
     description: "Traditional practices adapted for modern mental health",
-    icon: Hand,
+    icon: Heart,
     color: "bg-cultural-sun text-white",
   },
   {
@@ -135,8 +131,6 @@ const communityResources = [
 ];
 
 export default function CommunityPage() {
-  const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
-  const [selectedHealer, setSelectedHealer] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState("groups");
 
   return (

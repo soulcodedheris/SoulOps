@@ -2,21 +2,17 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/Button";
 import {
   Heart,
-  Calendar,
   Users,
   BookOpen,
   Video,
-  MessageCircle,
-  TrendingUp,
-  Shield,
   Globe,
+  Shield,
   Brain,
-  Sun,
-  Moon,
+  TrendingUp,
 } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 const moodOptions = [
   {
@@ -110,8 +106,7 @@ export default function DashboardPage() {
 
   const handleMoodSelect = (mood: number) => {
     setSelectedMood(mood);
-    // Here you would typically save to database
-    console.log("Mood selected:", mood);
+    // Remove console.log and add proper feedback if needed
   };
 
   return (
@@ -155,8 +150,7 @@ export default function DashboardPage() {
             Welcome back, {userName}! 🌅
           </h2>
           <p className="text-gray-600">
-            How are you feeling today? Let's check in with your mental
-            well-being.
+            Let&apos;s check in on your mental well-being today
           </p>
         </motion.div>
 
@@ -220,12 +214,12 @@ export default function DashboardPage() {
             Quick Actions
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {quickActions.map((action, index) => (
+            {quickActions.map((action) => (
               <motion.div
                 key={action.title}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
                 className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 cursor-pointer"
               >
                 <div
@@ -258,7 +252,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-3">
-              {culturalPractices.map((practice, index) => (
+              {culturalPractices.map((practice) => (
                 <div
                   key={practice.title}
                   className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 transition-colors duration-200"

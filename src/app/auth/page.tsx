@@ -52,7 +52,7 @@ export default function AuthPage() {
     firstName: "",
     lastName: "",
   });
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const { login, register } = useAuth();
@@ -76,10 +76,10 @@ export default function AuthPage() {
     setError("");
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
+    setError(null);
 
     try {
       if (isLogin) {
@@ -100,8 +100,10 @@ export default function AuthPage() {
 
       // Redirect to dashboard on success
       router.push("/dashboard");
-    } catch (error: any) {
-      setError(error.message || "An error occurred");
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "An error occurred";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -147,7 +149,7 @@ export default function AuthPage() {
                   Choose Your Language
                 </h2>
                 <p className="text-gray-600">
-                  Select the language you're most comfortable with
+                  Select the language you&apos;re most comfortable with
                 </p>
               </div>
 

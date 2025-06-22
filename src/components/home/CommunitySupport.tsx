@@ -150,8 +150,8 @@ export function CommunitySupport() {
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-mental-calm to-mental-balanced rounded-full mb-4 text-white font-semibold">
                     {testimonial.avatar}
                   </div>
-                  <p className="text-gray-600 mb-4 italic">
-                    "{testimonial.text}"
+                  <p className="text-gray-600 mb-6">
+                    &ldquo;{testimonial.text}&rdquo;
                   </p>
                   <div>
                     <div className="font-semibold text-gray-900">
@@ -180,7 +180,7 @@ export function CommunitySupport() {
             </h3>
             <p className="text-lg mb-6 opacity-90">
               Connect with others who understand your cultural context and
-              mental health journey. Together, we're building a supportive
+              mental health journey. Together, we&apos;re building a supportive
               ecosystem that respects tradition while embracing innovation.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
