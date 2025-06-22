@@ -1,0 +1,15 @@
+{
+  "common": {
+    "welcome": "Barka da zuwa",
+    "getStarted": "Fara",
+    "signIn": "Shiga",
+    "signUp": "Yin rajista",
+    "continue": "Ci gaba",
+    "back": "Komawa",
+    "save": "Ajiye",
+    "cancel": "Soke",
+    "loading": "Ana loda...",
+    "error": "Kuskure",
+    "success": "Nasara"
+  }
+} 

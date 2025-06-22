@@ -1,0 +1,15 @@
+{
+  "common": {
+    "welcome": "مرحباً",
+    "getStarted": "ابدأ",
+    "signIn": "تسجيل الدخول",
+    "signUp": "إنشاء حساب",
+    "continue": "متابعة",
+    "back": "رجوع",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجح"
+  }
+} 

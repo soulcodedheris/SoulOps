@@ -1,0 +1,15 @@
+{
+  "common": {
+    "welcome": "Nnọọ",
+    "getStarted": "Malite",
+    "signIn": "Banye",
+    "signUp": "Debanye aha",
+    "continue": "Gaa n'ihu",
+    "back": "Laghachi",
+    "save": "Chekwaa",
+    "cancel": "Kagbuo",
+    "loading": "Na-ebute...",
+    "error": "Njehie",
+    "success": "Ihe ịga nke ọma"
+  }
+} 

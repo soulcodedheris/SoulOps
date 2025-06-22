@@ -1,0 +1,78 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "getStarted": "Get Started",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "continue": "Continue",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "community": "Community",
+    "mood": "Mood Tracking",
+    "learn": "Learn",
+    "consultation": "Consultation",
+    "settings": "Settings"
+  },
+  "auth": {
+    "chooseLanguage": "Choose Your Language",
+    "culturalBackground": "Cultural Background",
+    "welcomeBack": "Welcome Back",
+    "createAccount": "Create Your Account",
+    "email": "Email Address",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "dontHaveAccount": "Don't have an account? Sign up",
+    "alreadyHaveAccount": "Already have an account? Sign in"
+  },
+  "dashboard": {
+    "welcome": "Welcome back",
+    "howAreYouFeeling": "How are you feeling today?",
+    "dailyMoodCheckin": "Daily Mood Check-in",
+    "quickActions": "Quick Actions",
+    "culturalPractices": "Cultural Wellness Practices",
+    "progress": "Your Progress",
+    "moodStreak": "Mood Streak",
+    "communityEngagement": "Community Engagement",
+    "learningProgress": "Learning Progress"
+  },
+  "mood": {
+    "title": "Mood Tracking",
+    "howAreYouFeeling": "How are you feeling today?",
+    "selectMood": "Select the mood that best describes your current state",
+    "activities": "What have you been doing today?",
+    "selectActivities": "Select activities that reflect your day (optional)",
+    "challenges": "Any challenges today?",
+    "selectTriggers": "Select any factors that may have affected your mood (optional)",
+    "notes": "Additional Notes",
+    "shareThoughts": "Share any thoughts or feelings (optional)",
+    "culturalPractices": "Cultural Wellness Practices",
+    "traditionalPractices": "Traditional practices for mental well-being"
+  },
+  "community": {
+    "title": "Community Support",
+    "supportGroups": "Cultural Support Groups",
+    "joinGroups": "Join groups that understand your cultural context",
+    "traditionalHealers": "Traditional Healers",
+    "connectHealers": "Connect with culturally-rooted healing practitioners",
+    "resources": "Community Resources",
+    "accessTools": "Access tools and support for your mental health journey"
+  },
+  "cultural": {
+    "yoruba": "Yoruba",
+    "igbo": "Igbo",
+    "hausa": "Hausa",
+    "nigerian": "Nigerian",
+    "westAfrican": "West African",
+    "global": "Global",
+    "mixedHeritage": "Mixed Heritage"
+  }
+} 

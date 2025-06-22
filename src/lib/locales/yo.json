@@ -1,0 +1,15 @@
+{
+  "common": {
+    "welcome": "Kaabo",
+    "getStarted": "Bẹrẹ",
+    "signIn": "Wọlé",
+    "signUp": "Forukọsilẹ",
+    "continue": "Tẹsiwaju",
+    "back": "Pada",
+    "save": "Fi pamọ",
+    "cancel": "Fagilee",
+    "loading": "N gba...",
+    "error": "Aṣiṣe",
+    "success": "Aṣeyọri"
+  }
+} 

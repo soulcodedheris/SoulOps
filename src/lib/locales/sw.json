@@ -1,0 +1,15 @@
+{
+  "common": {
+    "welcome": "Karibu",
+    "getStarted": "Anza",
+    "signIn": "Ingia",
+    "signUp": "Jisajili",
+    "continue": "Endelea",
+    "back": "Rudi",
+    "save": "Hifadhi",
+    "cancel": "Ghairi",
+    "loading": "Inapakia...",
+    "error": "Hitilafu",
+    "success": "Mafanikio"
+  }
+} 
