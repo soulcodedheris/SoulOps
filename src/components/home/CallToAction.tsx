@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Heart, Globe, Shield, Users } from "lucide-react";
+import Link from "next/link";
 
 export function CallToAction() {
   return (
@@ -25,21 +26,25 @@ export function CallToAction() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <Button
-              size="lg"
-              className="bg-white text-primary-600 hover:bg-gray-100"
-            >
-              <Globe className="w-5 h-5 mr-2" />
-              Get Started Free
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-white text-white hover:bg-white hover:text-primary-600"
-            >
-              <Shield className="w-5 h-5 mr-2" />
-              Learn More
-            </Button>
+            <Link href="/auth">
+              <Button
+                size="lg"
+                className="bg-white text-primary-600 hover:bg-gray-100"
+              >
+                <Globe className="w-5 h-5 mr-2" />
+                Get Started Free
+              </Button>
+            </Link>
+            <Link href="/#features">
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-white text-white hover:bg-white hover:text-primary-600"
+              >
+                <Shield className="w-5 h-5 mr-2" />
+                Learn More
+              </Button>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">

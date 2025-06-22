@@ -21,11 +21,19 @@ model User {
   displayName       String?
   avatar            String?
   dateOfBirth       DateTime?
+  age               Int?
   gender            Gender?
   location          String?
   timezone          String?
   language          String   @default("en")
   culturalContext   String?
+  occupation        String?
+  education         String?
+  familyStatus      String?
+  religion          String?
+  interests         String?  // JSON string of interests array
+  mentalHealthHistory String? // JSON string of mental health history
+  preferences       String?  // JSON string of user preferences
   isAnonymous       Boolean  @default(false)
   isVerified        Boolean  @default(false)
   isActive          Boolean  @default(true)
@@ -37,7 +45,7 @@ model User {
 
   // Relationships
   profile           UserProfile?
-  preferences       UserPreferences?
+  userPreferences   UserPreferences?
   sessions          Session[]
   moodEntries       MoodEntry[]
   goals             Goal[]

@@ -1,385 +1,515 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Brain,
   Heart,
+  Brain,
   Users,
   BookOpen,
-  MessageCircle,
-  Phone,
-  AlertTriangle,
+  Video,
   TrendingUp,
+  Calendar,
   Target,
-  Clock,
+  Award,
+  Activity,
+  ArrowRight,
+  User,
+  Shield,
 } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
 import AIInsights from "@/components/dashboard/AIInsights";
 import { UserProfile } from "@/lib/ai/recommendations";
 
-// Mock user profile for demonstration
-const mockUserProfile: UserProfile = {
-  id: "1",
-  age: 28,
-  gender: "Female",
-  location: "Lagos, Nigeria",
-  culturalContext: "Nigerian",
-  language: "English",
-  religion: "Christian",
-  occupation: "Software Developer",
-  education: "Bachelor's Degree",
-  familyStatus: "Single",
-  interests: ["mental health", "digital wellness", "cultural identity"],
-  mentalHealthHistory: {
-    conditions: [],
-    treatments: [],
-    medications: [],
-  },
-  preferences: {
-    consultationType: "BOTH",
-    budget: 20000,
-    availability: ["weekdays", "evenings"],
-    communicationStyle: "GENTLE",
-  },
-  behavioralData: {
-    moodHistory: [
-      {
-        date: "2024-01-20",
-        mood: 6,
-        activities: ["work", "exercise"],
-        triggers: ["work stress"],
-      },
-      {
-        date: "2024-01-19",
-        mood: 5,
-        activities: ["work"],
-        triggers: ["work stress", "lack of sleep"],
-      },
-      {
-        date: "2024-01-18",
-        mood: 7,
-        activities: ["family time", "prayer"],
-        triggers: [],
-      },
-      {
-        date: "2024-01-17",
-        mood: 4,
-        activities: ["work"],
-        triggers: ["work stress", "social media"],
-      },
-      {
-        date: "2024-01-16",
-        mood: 6,
-        activities: ["exercise", "reading"],
-        triggers: ["work stress"],
-      },
-      {
-        date: "2024-01-15",
-        mood: 8,
-        activities: ["family time", "prayer", "exercise"],
-        triggers: [],
-      },
-      {
-        date: "2024-01-14",
-        mood: 5,
-        activities: ["work"],
-        triggers: ["work stress"],
-      },
-    ],
-    assessmentScores: [
-      { assessmentId: "2", score: 12, date: "2024-01-15" },
-      { assessmentId: "4", score: 8, date: "2024-01-10" },
-    ],
-    courseProgress: [
-      { courseId: "5", progress: 100, engagement: 9 },
-      { courseId: "1", progress: 25, engagement: 7 },
-    ],
-    forumActivity: {
-      postsCreated: 2,
-      repliesGiven: 5,
-      topicsFollowed: ["general", "youth-mental-health"],
-    },
-  },
-};
+interface DashboardStats {
+  totalMoodEntries: number;
+  averageMood: number;
+  completedAssessments: number;
+  activeGoals: number;
+  forumPosts: number;
+  consultations: number;
+}
 
-export default function Dashboard() {
-  const [userProfile] = useState<UserProfile>(mockUserProfile);
-  const [activeTab, setActiveTab] = useState<"overview" | "ai-insights">(
-    "overview"
-  );
+interface RecentActivity {
+  id: string;
+  type: "mood" | "assessment" | "goal" | "forum" | "consultation";
+  title: string;
+  description: string;
+  date: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
 
-  const stats = [
-    {
-      title: "Mood Score",
-      value: "6.0",
-      change: "+0.5",
-      changeType: "positive" as const,
-      icon: Heart,
-      color: "text-red-600",
+function mapUserToUserProfile(user: unknown): UserProfile | null {
+  if (!user || typeof user !== "object" || !("id" in user)) return null;
+  const u = user as Record<string, unknown>;
+  return {
+    id: u.id as string,
+    age: (u.age as number) || 25,
+    gender: (u.gender as string) || "other",
+    location: (u.location as string) || "",
+    culturalContext: (u.culturalContext as string) || "nigerian",
+    language: (u.language as string) || "en",
+    religion: (u.religion as string) || "",
+    occupation: (u.occupation as string) || "",
+    education: (u.education as string) || "",
+    familyStatus: (u.familyStatus as string) || "",
+    interests: u.interests ? JSON.parse(u.interests as string) : [],
+    mentalHealthHistory: u.mentalHealthHistory
+      ? JSON.parse(u.mentalHealthHistory as string)
+      : { conditions: [], treatments: [], medications: [] },
+    preferences: u.preferences
+      ? JSON.parse(u.preferences as string)
+      : {
+          consultationType: "BOTH",
+          budget: 20000,
+          availability: ["weekdays"],
+          communicationStyle: "GENTLE",
+        },
+    behavioralData: {
+      moodHistory: [],
+      assessmentScores: [],
+      courseProgress: [],
+      forumActivity: { postsCreated: 0, repliesGiven: 0, topicsFollowed: [] },
     },
-    {
-      title: "Courses Completed",
-      value: "1",
-      change: "+1",
-      changeType: "positive" as const,
-      icon: BookOpen,
-      color: "text-blue-600",
-    },
-    {
-      title: "Community Posts",
-      value: "7",
-      change: "+2",
-      changeType: "positive" as const,
-      icon: Users,
-      color: "text-green-600",
-    },
-    {
-      title: "Assessments Taken",
-      value: "2",
-      change: "+1",
-      changeType: "positive" as const,
-      icon: Target,
-      color: "text-purple-600",
-    },
-  ];
+  };
+}
+
+export default function DashboardPage() {
+  const { user } = useAuth();
+  const [stats, setStats] = useState<DashboardStats>({
+    totalMoodEntries: 0,
+    averageMood: 0,
+    completedAssessments: 0,
+    activeGoals: 0,
+    forumPosts: 0,
+    consultations: 0,
+  });
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
+
+  const fetchDashboardData = async () => {
+    try {
+      // Fetch user's dashboard data
+      const response = await fetch("/api/dashboard", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data.stats);
+        setRecentActivity(data.recentActivity);
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      // Use mock data as fallback
+      setStats({
+        totalMoodEntries: 12,
+        averageMood: 7.2,
+        completedAssessments: 3,
+        activeGoals: 2,
+        forumPosts: 5,
+        consultations: 1,
+      });
+      setRecentActivity([
+        {
+          id: "1",
+          type: "mood",
+          title: "Mood Entry",
+          description: "Recorded your mood as 8/10",
+          date: "2 hours ago",
+          icon: Heart,
+        },
+        {
+          id: "2",
+          type: "assessment",
+          title: "Anxiety Assessment",
+          description: "Completed anxiety screening",
+          date: "1 day ago",
+          icon: Brain,
+        },
+        {
+          id: "3",
+          type: "goal",
+          title: "Goal Progress",
+          description: "Made progress on stress management",
+          date: "2 days ago",
+          icon: Target,
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const quickActions = [
     {
       title: "Track Mood",
-      description: "Record your current emotional state",
+      description: "Record how you're feeling today",
       icon: Heart,
       href: "/dashboard/mood",
-      color: "bg-red-50 text-red-700 border-red-200",
+      color: "bg-red-500",
     },
     {
       title: "Take Assessment",
       description: "Complete a mental health screening",
-      icon: Target,
+      icon: Brain,
       href: "/dashboard/assessment",
-      color: "bg-purple-50 text-purple-700 border-purple-200",
-    },
-    {
-      title: "Find Provider",
-      description: "Connect with mental health professionals",
-      icon: Users,
-      href: "/dashboard/consultation",
-      color: "bg-blue-50 text-blue-700 border-blue-200",
+      color: "bg-blue-500",
     },
     {
       title: "Join Community",
-      description: "Connect with others in the forum",
-      icon: MessageCircle,
-      href: "/dashboard/forum",
-      color: "bg-green-50 text-green-700 border-green-200",
+      description: "Connect with others",
+      icon: Users,
+      href: "/dashboard/community",
+      color: "bg-green-500",
+    },
+    {
+      title: "Book Consultation",
+      description: "Schedule a session with a provider",
+      icon: Video,
+      href: "/dashboard/consultation",
+      color: "bg-purple-500",
     },
   ];
 
-  const recentActivity = [
+  const features = [
     {
-      type: "course_completed",
-      title: "Completed Mental Health First Aid",
-      description: "You earned a certificate in mental health first aid",
-      time: "2 days ago",
-      icon: BookOpen,
-      color: "text-blue-600",
-    },
-    {
-      type: "assessment_taken",
-      title: "Completed Anxiety Assessment",
-      description: "Your score: 12/21 (Moderate anxiety symptoms)",
-      time: "1 week ago",
-      icon: Target,
-      color: "text-purple-600",
-    },
-    {
-      type: "mood_tracked",
-      title: "Mood recorded: 6/10",
-      description: "Activities: work, exercise. Triggers: work stress",
-      time: "Today",
+      title: "Mood Tracking",
+      description: "Monitor your emotional well-being",
       icon: Heart,
-      color: "text-red-600",
+      href: "/dashboard/mood",
+      progress: 75,
+    },
+    {
+      title: "Mental Health Assessments",
+      description: "Professional screening tools",
+      icon: Brain,
+      href: "/dashboard/assessment",
+      progress: 60,
+    },
+    {
+      title: "Community Forum",
+      description: "Connect with others",
+      icon: Users,
+      href: "/dashboard/forum",
+      progress: 40,
+    },
+    {
+      title: "Tele-consultation",
+      description: "Professional mental health support",
+      icon: Video,
+      href: "/dashboard/consultation",
+      progress: 25,
+    },
+    {
+      title: "Digital Literacy",
+      description: "Learn about digital wellness",
+      icon: BookOpen,
+      href: "/dashboard/learn",
+      progress: 30,
+    },
+    {
+      title: "Emergency Support",
+      description: "24/7 crisis intervention",
+      icon: Shield,
+      href: "/dashboard/emergency",
+      progress: 0,
     },
   ];
+
+  const mappedProfile = mapUserToUserProfile(user);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-500"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, Aisha!
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Here&apos;s your mental health journey overview
-          </p>
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="flex space-x-1 bg-white p-1 rounded-lg shadow-sm mb-8">
-          <Button
-            variant={activeTab === "overview" ? "default" : "ghost"}
-            onClick={() => setActiveTab("overview")}
-            className="flex-1"
-          >
-            <TrendingUp className="h-4 w-4 mr-2" />
-            Overview
-          </Button>
-          <Button
-            variant={activeTab === "ai-insights" ? "default" : "ghost"}
-            onClick={() => setActiveTab("ai-insights")}
-            className="flex-1"
-          >
-            <Brain className="h-4 w-4 mr-2" />
-            AI Insights
-          </Button>
-        </div>
-
-        {activeTab === "overview" && (
-          <>
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              {stats.map((stat, index) => (
-                <Card key={index} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">
-                          {stat.title}
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900">
-                          {stat.value}
-                        </p>
-                        <div className="flex items-center mt-1">
-                          <span
-                            className={`text-sm font-medium ${
-                              stat.changeType === "positive"
-                                ? "text-green-600"
-                                : "text-red-600"
-                            }`}
-                          >
-                            {stat.change}
-                          </span>
-                          <span className="text-sm text-gray-500 ml-1">
-                            from last week
-                          </span>
-                        </div>
-                      </div>
-                      <div
-                        className={`p-3 rounded-full bg-gray-100 ${stat.color}`}
-                      >
-                        <stat.icon className="h-6 w-6" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b border-gray-200">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Welcome back, {user?.displayName || user?.firstName || "User"}!
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Let&apos;s continue your mental health journey
+              </p>
             </div>
+            <div className="flex items-center space-x-4">
+              <Link href="/dashboard/profile">
+                <Button variant="outline" size="sm">
+                  <User className="w-4 h-4 mr-2" />
+                  Profile
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Quick Actions */}
-              <div className="lg:col-span-1">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Target className="h-5 w-5 mr-2" />
-                      Quick Actions
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {quickActions.map((action, index) => (
-                      <Link key={index} href={action.href}>
-                        <div
-                          className={`p-4 rounded-lg border-2 border-dashed ${action.color} hover:border-solid transition-all cursor-pointer`}
-                        >
-                          <div className="flex items-center space-x-3">
-                            <action.icon className="h-5 w-5" />
-                            <div>
-                              <h3 className="font-medium">{action.title}</h3>
-                              <p className="text-sm opacity-80">
-                                {action.description}
-                              </p>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    Mood Entries
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.totalMoodEntries}
+                  </p>
+                </div>
+                <div className="p-3 bg-red-100 rounded-full">
+                  <Heart className="w-6 h-6 text-red-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    Average Mood
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.averageMood}/10
+                  </p>
+                </div>
+                <div className="p-3 bg-blue-100 rounded-full">
+                  <TrendingUp className="w-6 h-6 text-blue-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    Assessments
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.completedAssessments}
+                  </p>
+                </div>
+                <div className="p-3 bg-green-100 rounded-full">
+                  <Brain className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    Active Goals
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.activeGoals}
+                  </p>
+                </div>
+                <div className="p-3 bg-purple-100 rounded-full">
+                  <Target className="w-6 h-6 text-purple-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Quick Actions */}
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Activity className="w-5 h-5 mr-2" />
+                  Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {quickActions.map((action, index) => (
+                    <motion.div
+                      key={action.title}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                    >
+                      <Link href={action.href}>
+                        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                          <CardContent className="p-6">
+                            <div className="flex items-center space-x-4">
+                              <div
+                                className={`p-3 rounded-full ${action.color} text-white`}
+                              >
+                                <action.icon className="w-6 h-6" />
+                              </div>
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-gray-900">
+                                  {action.title}
+                                </h3>
+                                <p className="text-sm text-gray-600">
+                                  {action.description}
+                                </p>
+                              </div>
+                              <ArrowRight className="w-5 h-5 text-gray-400" />
                             </div>
-                          </div>
-                        </div>
+                          </CardContent>
+                        </Card>
                       </Link>
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Recent Activity */}
-              <div className="lg:col-span-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Clock className="h-5 w-5 mr-2" />
-                      Recent Activity
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {recentActivity.map((activity, index) => (
-                        <div
-                          key={index}
-                          className="flex items-start space-x-3 p-3 rounded-lg bg-gray-50"
-                        >
-                          <div
-                            className={`p-2 rounded-full bg-white ${activity.color}`}
-                          >
-                            <activity.icon className="h-4 w-4" />
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-medium text-gray-900">
-                              {activity.title}
-                            </h4>
-                            <p className="text-sm text-gray-600">
-                              {activity.description}
-                            </p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {activity.time}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-
-            {/* Emergency Support */}
-            <Card className="mt-8 border-red-200 bg-red-50">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <AlertTriangle className="h-6 w-6 text-red-600" />
-                    <div>
-                      <h3 className="font-semibold text-red-900">
-                        Need immediate support?
-                      </h3>
-                      <p className="text-red-700">
-                        If you&apos;re experiencing a mental health crisis, help
-                        is available 24/7
-                      </p>
-                    </div>
-                  </div>
-                  <Link href="/dashboard/emergency">
-                    <Button variant="destructive">
-                      <Phone className="h-4 w-4 mr-2" />
-                      Emergency Support
-                    </Button>
-                  </Link>
+                    </motion.div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
-          </>
-        )}
 
-        {activeTab === "ai-insights" && (
-          <AIInsights userProfile={userProfile} />
-        )}
+            {/* Features Progress */}
+            <Card className="mt-8">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Award className="w-5 h-5 mr-2" />
+                  Your Progress
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {features.map((feature, index) => (
+                    <motion.div
+                      key={feature.title}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                    >
+                      <Link href={feature.href}>
+                        <div className="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+                          <div className="flex items-center space-x-4">
+                            <div className="p-2 bg-primary-100 rounded-lg">
+                              <feature.icon className="w-5 h-5 text-primary-600" />
+                            </div>
+                            <div>
+                              <h3 className="font-medium text-gray-900">
+                                {feature.title}
+                              </h3>
+                              <p className="text-sm text-gray-600">
+                                {feature.description}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-4">
+                            <div className="w-24 bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-primary-500 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${feature.progress}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-sm font-medium text-gray-600">
+                              {feature.progress}%
+                            </span>
+                            <ArrowRight className="w-4 h-4 text-gray-400" />
+                          </div>
+                        </div>
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* AI Insights */}
+            {mappedProfile && <AIInsights userProfile={mappedProfile} />}
+
+            {/* Recent Activity */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Calendar className="w-5 h-5 mr-2" />
+                  Recent Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {recentActivity.map((activity, index) => (
+                    <motion.div
+                      key={activity.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                      className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="p-2 bg-primary-100 rounded-lg">
+                        <activity.icon className="w-4 h-4 text-primary-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900">
+                          {activity.title}
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          {activity.description}
+                        </p>
+                        <p className="text-xs text-gray-500">{activity.date}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <TrendingUp className="w-5 h-5 mr-2" />
+                  This Week
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Mood Entries</span>
+                    <span className="text-sm font-medium">5</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Forum Posts</span>
+                    <span className="text-sm font-medium">2</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">
+                      Goals Progress
+                    </span>
+                    <span className="text-sm font-medium">+15%</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
