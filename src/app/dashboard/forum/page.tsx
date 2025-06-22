@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -65,7 +65,7 @@ export default function ForumPage() {
     isAnonymous: false,
   });
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     try {
       const url =
         selectedCategory === "all"
@@ -82,7 +82,7 @@ export default function ForumPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedCategory]);
 
   const fetchCategories = async () => {
     try {
@@ -99,7 +99,7 @@ export default function ForumPage() {
   useEffect(() => {
     fetchCategories();
     fetchPosts();
-  }, [selectedCategory, fetchPosts]);
+  }, [fetchPosts]);
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();

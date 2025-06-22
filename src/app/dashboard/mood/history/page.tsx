@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -30,7 +30,7 @@ export default function MoodHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState("7d"); // 7d, 30d, 90d
 
-  const fetchMoodHistory = async () => {
+  const fetchMoodHistory = useCallback(async () => {
     try {
       const response = await fetch(
         `/api/mood?limit=100&timeRange=${timeRange}`
@@ -44,11 +44,11 @@ export default function MoodHistoryPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeRange]);
 
   useEffect(() => {
     fetchMoodHistory();
-  }, [timeRange, fetchMoodHistory]);
+  }, [fetchMoodHistory]);
 
   const getAverageMood = () => {
     if (moodEntries.length === 0) return 0;

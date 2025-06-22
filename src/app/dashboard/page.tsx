@@ -1,357 +1,385 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/Button";
 import {
+  Brain,
   Heart,
   Users,
   BookOpen,
-  Video,
-  Globe,
-  Shield,
-  Brain,
-  TrendingUp,
   MessageCircle,
+  Phone,
   AlertTriangle,
-  ClipboardList,
+  TrendingUp,
+  Target,
+  Clock,
 } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import Link from "next/link";
+import AIInsights from "@/components/dashboard/AIInsights";
+import { UserProfile } from "@/lib/ai/recommendations";
 
-const moodOptions = [
-  {
-    value: 1,
-    emoji: "😢",
-    label: "Very Low",
-    color: "bg-red-100 text-red-800",
+// Mock user profile for demonstration
+const mockUserProfile: UserProfile = {
+  id: "1",
+  age: 28,
+  gender: "Female",
+  location: "Lagos, Nigeria",
+  culturalContext: "Nigerian",
+  language: "English",
+  religion: "Christian",
+  occupation: "Software Developer",
+  education: "Bachelor's Degree",
+  familyStatus: "Single",
+  interests: ["mental health", "digital wellness", "cultural identity"],
+  mentalHealthHistory: {
+    conditions: [],
+    treatments: [],
+    medications: [],
   },
-  {
-    value: 2,
-    emoji: "😕",
-    label: "Low",
-    color: "bg-orange-100 text-orange-800",
+  preferences: {
+    consultationType: "BOTH",
+    budget: 20000,
+    availability: ["weekdays", "evenings"],
+    communicationStyle: "GENTLE",
   },
-  {
-    value: 3,
-    emoji: "😐",
-    label: "Neutral",
-    color: "bg-yellow-100 text-yellow-800",
+  behavioralData: {
+    moodHistory: [
+      {
+        date: "2024-01-20",
+        mood: 6,
+        activities: ["work", "exercise"],
+        triggers: ["work stress"],
+      },
+      {
+        date: "2024-01-19",
+        mood: 5,
+        activities: ["work"],
+        triggers: ["work stress", "lack of sleep"],
+      },
+      {
+        date: "2024-01-18",
+        mood: 7,
+        activities: ["family time", "prayer"],
+        triggers: [],
+      },
+      {
+        date: "2024-01-17",
+        mood: 4,
+        activities: ["work"],
+        triggers: ["work stress", "social media"],
+      },
+      {
+        date: "2024-01-16",
+        mood: 6,
+        activities: ["exercise", "reading"],
+        triggers: ["work stress"],
+      },
+      {
+        date: "2024-01-15",
+        mood: 8,
+        activities: ["family time", "prayer", "exercise"],
+        triggers: [],
+      },
+      {
+        date: "2024-01-14",
+        mood: 5,
+        activities: ["work"],
+        triggers: ["work stress"],
+      },
+    ],
+    assessmentScores: [
+      { assessmentId: "2", score: 12, date: "2024-01-15" },
+      { assessmentId: "4", score: 8, date: "2024-01-10" },
+    ],
+    courseProgress: [
+      { courseId: "5", progress: 100, engagement: 9 },
+      { courseId: "1", progress: 25, engagement: 7 },
+    ],
+    forumActivity: {
+      postsCreated: 2,
+      repliesGiven: 5,
+      topicsFollowed: ["general", "youth-mental-health"],
+    },
   },
-  {
-    value: 4,
-    emoji: "🙂",
-    label: "Good",
-    color: "bg-green-100 text-green-800",
-  },
-  {
-    value: 5,
-    emoji: "😊",
-    label: "Excellent",
-    color: "bg-blue-100 text-blue-800",
-  },
-];
+};
 
-const quickActions = [
-  {
-    icon: Heart,
-    title: "Mood Check-in",
-    description: "Track how you're feeling today",
-    color: "bg-mental-calm text-white",
-    href: "/dashboard/mood",
-  },
-  {
-    icon: Users,
-    title: "Community",
-    description: "Connect with others",
-    color: "bg-mental-balanced text-white",
-    href: "/dashboard/community",
-  },
-  {
-    icon: MessageCircle,
-    title: "Forum",
-    description: "Join discussions & share experiences",
-    color: "bg-cultural-fire text-white",
-    href: "/dashboard/forum",
-  },
-  {
-    icon: Video,
-    title: "Consultation",
-    description: "Talk to a professional",
-    color: "bg-consultation-primary text-white",
-    href: "/dashboard/consultation",
-  },
-  {
-    icon: BookOpen,
-    title: "Learn",
-    description: "Digital literacy & wellness",
-    color: "bg-mental-peaceful text-white",
-    href: "/dashboard/learn",
-  },
-  {
-    icon: AlertTriangle,
-    title: "Emergency",
-    description: "Crisis support & resources",
-    color: "bg-red-500 text-white",
-    href: "/dashboard/emergency",
-  },
-  {
-    icon: ClipboardList,
-    title: "Assessment",
-    description: "Mental health screenings",
-    color: "bg-purple-500 text-white",
-    href: "/dashboard/assessment",
-  },
-];
+export default function Dashboard() {
+  const [userProfile] = useState<UserProfile>(mockUserProfile);
+  const [activeTab, setActiveTab] = useState<"overview" | "ai-insights">(
+    "overview"
+  );
 
-const culturalPractices = [
-  {
-    title: "Morning Meditation",
-    description: "Traditional mindfulness practices",
-    duration: "10 min",
-    cultural: "Yoruba",
-  },
-  {
-    title: "Community Prayer",
-    description: "Spiritual wellness through prayer",
-    duration: "15 min",
-    cultural: "Hausa",
-  },
-  {
-    title: "Ancestral Reflection",
-    description: "Connecting with cultural heritage",
-    duration: "20 min",
-    cultural: "Igbo",
-  },
-];
+  const stats = [
+    {
+      title: "Mood Score",
+      value: "6.0",
+      change: "+0.5",
+      changeType: "positive" as const,
+      icon: Heart,
+      color: "text-red-600",
+    },
+    {
+      title: "Courses Completed",
+      value: "1",
+      change: "+1",
+      changeType: "positive" as const,
+      icon: BookOpen,
+      color: "text-blue-600",
+    },
+    {
+      title: "Community Posts",
+      value: "7",
+      change: "+2",
+      changeType: "positive" as const,
+      icon: Users,
+      color: "text-green-600",
+    },
+    {
+      title: "Assessments Taken",
+      value: "2",
+      change: "+1",
+      changeType: "positive" as const,
+      icon: Target,
+      color: "text-purple-600",
+    },
+  ];
 
-export default function DashboardPage() {
-  const [selectedMood, setSelectedMood] = useState<number | null>(null);
-  const [userName] = useState("Aisha");
-  const [userLanguage] = useState("Yoruba");
+  const quickActions = [
+    {
+      title: "Track Mood",
+      description: "Record your current emotional state",
+      icon: Heart,
+      href: "/dashboard/mood",
+      color: "bg-red-50 text-red-700 border-red-200",
+    },
+    {
+      title: "Take Assessment",
+      description: "Complete a mental health screening",
+      icon: Target,
+      href: "/dashboard/assessment",
+      color: "bg-purple-50 text-purple-700 border-purple-200",
+    },
+    {
+      title: "Find Provider",
+      description: "Connect with mental health professionals",
+      icon: Users,
+      href: "/dashboard/consultation",
+      color: "bg-blue-50 text-blue-700 border-blue-200",
+    },
+    {
+      title: "Join Community",
+      description: "Connect with others in the forum",
+      icon: MessageCircle,
+      href: "/dashboard/forum",
+      color: "bg-green-50 text-green-700 border-green-200",
+    },
+  ];
 
-  const handleMoodSelect = (mood: number) => {
-    setSelectedMood(mood);
-    // Remove console.log and add proper feedback if needed
-  };
+  const recentActivity = [
+    {
+      type: "course_completed",
+      title: "Completed Mental Health First Aid",
+      description: "You earned a certificate in mental health first aid",
+      time: "2 days ago",
+      icon: BookOpen,
+      color: "text-blue-600",
+    },
+    {
+      type: "assessment_taken",
+      title: "Completed Anxiety Assessment",
+      description: "Your score: 12/21 (Moderate anxiety symptoms)",
+      time: "1 week ago",
+      icon: Target,
+      color: "text-purple-600",
+    },
+    {
+      type: "mood_tracked",
+      title: "Mood recorded: 6/10",
+      description: "Activities: work, exercise. Triggers: work stress",
+      time: "Today",
+      icon: Heart,
+      color: "text-red-600",
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full">
-                <Heart className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900">SoulOps</h1>
-                <p className="text-sm text-gray-600">Mental Health Dashboard</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <Globe className="w-4 h-4" />
-                <span>{userLanguage}</span>
-              </div>
-              <Button variant="ghost" size="sm">
-                <Shield className="w-4 h-4 mr-2" />
-                Settings
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Welcome back, {userName}! 🌅
-          </h2>
-          <p className="text-gray-600">
-            Let&apos;s check in on your mental well-being today
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">
+            Welcome back, Aisha!
+          </h1>
+          <p className="text-gray-600 mt-2">
+            Here&apos;s your mental health journey overview
           </p>
-        </motion.div>
+        </div>
 
-        {/* Mood Check-in */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8"
-        >
-          <div className="flex items-center mb-4">
-            <Heart className="w-6 h-6 text-mental-calm mr-2" />
-            <h3 className="text-lg font-semibold text-gray-900">
-              Daily Mood Check-in
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-5 gap-3 mb-4">
-            {moodOptions.map((mood) => (
-              <button
-                key={mood.value}
-                onClick={() => handleMoodSelect(mood.value)}
-                className={`p-4 rounded-lg border-2 transition-all duration-200 ${
-                  selectedMood === mood.value
-                    ? "border-primary-500 bg-primary-50"
-                    : "border-gray-200 hover:border-primary-300"
-                }`}
-              >
-                <div className="text-2xl mb-2">{mood.emoji}</div>
-                <div className="text-xs font-medium text-gray-700">
-                  {mood.label}
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {selectedMood && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-green-50 border border-green-200 rounded-lg p-4"
-            >
-              <p className="text-green-800 text-sm">
-                Thank you for checking in! Your mood has been recorded.
-                {selectedMood >= 4 && " Great to see you're feeling well!"}
-                {selectedMood <= 2 &&
-                  " Remember, it's okay to not be okay. We're here to support you."}
-              </p>
-            </motion.div>
-          )}
-        </motion.div>
-
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mb-8"
-        >
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Quick Actions
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {quickActions.map((action) => (
-              <motion.div
-                key={action.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 cursor-pointer"
-              >
-                <div
-                  className={`inline-flex items-center justify-center w-12 h-12 ${action.color} rounded-lg mb-4`}
-                >
-                  <action.icon className="w-6 h-6" />
-                </div>
-                <h4 className="font-semibold text-gray-900 mb-2">
-                  {action.title}
-                </h4>
-                <p className="text-sm text-gray-600">{action.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Cultural Practices */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
+        {/* Tab Navigation */}
+        <div className="flex space-x-1 bg-white p-1 rounded-lg shadow-sm mb-8">
+          <Button
+            variant={activeTab === "overview" ? "default" : "ghost"}
+            onClick={() => setActiveTab("overview")}
+            className="flex-1"
           >
-            <div className="flex items-center mb-4">
-              <Brain className="w-6 h-6 text-cultural-earth mr-2" />
-              <h3 className="text-lg font-semibold text-gray-900">
-                Cultural Wellness Practices
-              </h3>
-            </div>
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Overview
+          </Button>
+          <Button
+            variant={activeTab === "ai-insights" ? "default" : "ghost"}
+            onClick={() => setActiveTab("ai-insights")}
+            className="flex-1"
+          >
+            <Brain className="h-4 w-4 mr-2" />
+            AI Insights
+          </Button>
+        </div>
 
-            <div className="space-y-3">
-              {culturalPractices.map((practice) => (
-                <div
-                  key={practice.title}
-                  className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 transition-colors duration-200"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-gray-900">
-                      {practice.title}
-                    </h4>
-                    <span className="text-xs bg-cultural-sun/20 text-cultural-sun px-2 py-1 rounded-full">
-                      {practice.cultural}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">
-                    {practice.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">
-                      {practice.duration}
-                    </span>
-                    <Button size="sm" variant="outline">
-                      Start
-                    </Button>
-                  </div>
-                </div>
+        {activeTab === "overview" && (
+          <>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {stats.map((stat, index) => (
+                <Card key={index} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">
+                          {stat.title}
+                        </p>
+                        <p className="text-2xl font-bold text-gray-900">
+                          {stat.value}
+                        </p>
+                        <div className="flex items-center mt-1">
+                          <span
+                            className={`text-sm font-medium ${
+                              stat.changeType === "positive"
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }`}
+                          >
+                            {stat.change}
+                          </span>
+                          <span className="text-sm text-gray-500 ml-1">
+                            from last week
+                          </span>
+                        </div>
+                      </div>
+                      <div
+                        className={`p-3 rounded-full bg-gray-100 ${stat.color}`}
+                      >
+                        <stat.icon className="h-6 w-6" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
-          </motion.div>
 
-          {/* Progress & Insights */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
-          >
-            <div className="flex items-center mb-4">
-              <TrendingUp className="w-6 h-6 text-mental-calm mr-2" />
-              <h3 className="text-lg font-semibold text-gray-900">
-                Your Progress
-              </h3>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Quick Actions */}
+              <div className="lg:col-span-1">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Target className="h-5 w-5 mr-2" />
+                      Quick Actions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {quickActions.map((action, index) => (
+                      <Link key={index} href={action.href}>
+                        <div
+                          className={`p-4 rounded-lg border-2 border-dashed ${action.color} hover:border-solid transition-all cursor-pointer`}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <action.icon className="h-5 w-5" />
+                            <div>
+                              <h3 className="font-medium">{action.title}</h3>
+                              <p className="text-sm opacity-80">
+                                {action.description}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Recent Activity */}
+              <div className="lg:col-span-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Clock className="h-5 w-5 mr-2" />
+                      Recent Activity
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {recentActivity.map((activity, index) => (
+                        <div
+                          key={index}
+                          className="flex items-start space-x-3 p-3 rounded-lg bg-gray-50"
+                        >
+                          <div
+                            className={`p-2 rounded-full bg-white ${activity.color}`}
+                          >
+                            <activity.icon className="h-4 w-4" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900">
+                              {activity.title}
+                            </h4>
+                            <p className="text-sm text-gray-600">
+                              {activity.description}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {activity.time}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
-                <div>
-                  <p className="font-medium text-gray-900">Mood Streak</p>
-                  <p className="text-sm text-gray-600">7 days of check-ins</p>
+            {/* Emergency Support */}
+            <Card className="mt-8 border-red-200 bg-red-50">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <AlertTriangle className="h-6 w-6 text-red-600" />
+                    <div>
+                      <h3 className="font-semibold text-red-900">
+                        Need immediate support?
+                      </h3>
+                      <p className="text-red-700">
+                        If you&apos;re experiencing a mental health crisis, help
+                        is available 24/7
+                      </p>
+                    </div>
+                  </div>
+                  <Link href="/dashboard/emergency">
+                    <Button variant="destructive">
+                      <Phone className="h-4 w-4 mr-2" />
+                      Emergency Support
+                    </Button>
+                  </Link>
                 </div>
-                <div className="text-2xl">🔥</div>
-              </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
 
-              <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
-                <div>
-                  <p className="font-medium text-gray-900">
-                    Community Engagement
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    3 support group sessions
-                  </p>
-                </div>
-                <div className="text-2xl">👥</div>
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg">
-                <div>
-                  <p className="font-medium text-gray-900">Learning Progress</p>
-                  <p className="text-sm text-gray-600">
-                    5 digital literacy modules
-                  </p>
-                </div>
-                <div className="text-2xl">📚</div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+        {activeTab === "ai-insights" && (
+          <AIInsights userProfile={userProfile} />
+        )}
       </div>
     </div>
   );
