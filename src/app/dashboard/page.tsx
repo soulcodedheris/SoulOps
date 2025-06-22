@@ -12,6 +12,8 @@ import {
   Brain,
   TrendingUp,
   MessageCircle,
+  AlertTriangle,
+  ClipboardList,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -71,6 +73,13 @@ const quickActions = [
     href: "/dashboard/forum",
   },
   {
+    icon: Video,
+    title: "Consultation",
+    description: "Talk to a professional",
+    color: "bg-consultation-primary text-white",
+    href: "/dashboard/consultation",
+  },
+  {
     icon: BookOpen,
     title: "Learn",
     description: "Digital literacy & wellness",
@@ -78,11 +87,18 @@ const quickActions = [
     href: "/dashboard/learn",
   },
   {
-    icon: Video,
-    title: "Consultation",
-    description: "Talk to a professional",
-    color: "bg-cultural-fire text-white",
-    href: "/dashboard/consultation",
+    icon: AlertTriangle,
+    title: "Emergency",
+    description: "Crisis support & resources",
+    color: "bg-red-500 text-white",
+    href: "/dashboard/emergency",
+  },
+  {
+    icon: ClipboardList,
+    title: "Assessment",
+    description: "Mental health screenings",
+    color: "bg-purple-500 text-white",
+    href: "/dashboard/assessment",
   },
 ];
 
